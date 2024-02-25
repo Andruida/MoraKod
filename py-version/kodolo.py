@@ -21,14 +21,14 @@ epic_list = [
     15, 31, 47, 63, 79, 95, 111, 127, 143, 159, 175, 191, 207, 223, 239, 255]
 
 kod_szavak_str = "0000000000101100101010100111100011000111100110010110000110100111001101010110011101001101010101100001110011111111"
-kod_szavak = bitarray(kod_szavak_str[::-1])
+kod_szavak = bitarray(kod_szavak_str[::-1], endian="little")
 del kod_szavak_str
 
 def kodolo_matrix(c_chunk: bitarray) -> bitarray:
     if not isinstance(c_chunk, bitarray) or len(c_chunk) != 4:
         raise ValueError("Input bitarray must be 4 bits long, got " + str(len(c_chunk)))
     
-    kodolt = bitarrayutil.zeros(7)
+    kodolt = bitarrayutil.zeros(7, endian="little")
     for i in range(0, 4, 1):
         kodolt[i+3] = c_chunk[i]
     
@@ -51,11 +51,11 @@ def encode(bit_in : bitarray) -> bitarray:
     if not isinstance(bit_in, bitarray) or len(bit_in) != 144:
         raise ValueError("Input bitarray must be 144 bits long, got " + str(len(bit_in)))
     
-    _bit_out = bitarrayutil.zeros(256)
+    _bit_out = bitarrayutil.zeros(256, endian="little")
     for i in range(252, 256, 1):
         _bit_out[i] = 1
     
-    current_chunk = bitarrayutil.zeros(4)
+    current_chunk = bitarrayutil.zeros(4, endian="little")
     chunk_index: int = 0
     bit_out_index: int = 0
     
@@ -70,7 +70,7 @@ def encode(bit_in : bitarray) -> bitarray:
                 bit_out_index += 1
             chunk_index = 0
     
-    bit_out = bitarrayutil.zeros(256)
+    bit_out = bitarrayutil.zeros(256, endian="little")
     for i in range(256):
         bit_out[i] = _bit_out[epic_list[i]]
         
@@ -100,7 +100,7 @@ def kodolo_javitas(c_bit: bitarray) -> bitarray:
             c_diff = 0
             chunk_index = 0
     
-    res_bit = bitarrayutil.zeros(7)
+    res_bit = bitarrayutil.zeros(7, endian="little")
     index: int = 0
     for i in range(k_index, k_index + 7, 1):
         res_bit[index] = kod_szavak[i]
@@ -112,16 +112,16 @@ def decode(bit_in: bitarray) -> bitarray:
     if not isinstance(bit_in, bitarray) or len(bit_in) != 256:
         raise ValueError("Input bitarray must be 256 bits long got " + str(len(bit_in)))
     
-    un_bit = bitarrayutil.zeros(256)
+    un_bit = bitarrayutil.zeros(256, endian="little")
     
     for i in range(256):
         un_bit[i] = bit_in[epic_list[i]]
         
-    res_bit = bitarrayutil.zeros(144)
+    res_bit = bitarrayutil.zeros(144, endian="little")
     chunk_index: int = 0
     res_bit_index: int = 0
-    javitando = bitarrayutil.zeros(7)
-    javitott = bitarrayutil.zeros(7)
+    javitando = bitarrayutil.zeros(7, endian="little")
+    javitott = bitarrayutil.zeros(7, endian="little")
     
     for i in range(252):
         javitando[chunk_index] = un_bit[i]
@@ -141,7 +141,7 @@ def encode_bytes(bytes_in: bytes) -> bytes:
     if not isinstance(bytes_in, bytes) or len(bytes_in) != 18:
         raise ValueError("Input bytes must be 18 bytes long, got " + str(len(bytes_in)))
     
-    bits = bitarray()
+    bits = bitarray(endian="little")
     bits.frombytes(bytes_in)
     return encode(bits).tobytes()
 
@@ -149,7 +149,7 @@ def decode_bytes(bytes_in: bytes) -> bytes:
     if not isinstance(bytes_in, bytes) or len(bytes_in) != 32:
         raise ValueError("Input bytes must be 32 bytes long, got " + str(len(bytes_in)))
     
-    bits = bitarray()
+    bits = bitarray(endian="little")
     bits.frombytes(bytes_in)
     return decode(bits).tobytes()
     
